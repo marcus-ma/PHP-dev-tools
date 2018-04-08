@@ -1,4 +1,5 @@
 <?php
+//使用 map、filter和reduce来减少使用foreach
 class ArrayCollection
 {
     protected $items;
