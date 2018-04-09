@@ -1,44 +1,44 @@
 <?php
-//����ģʽ
+//插入模式
 define('DB_INSERT',1);
-//�滻ģʽ
+//替换模式
 define('DB_REPLACE',2);
-//����ģʽ
+//插替模式
 define('DB_STORE',3);
-//��Ͱ�Ĵ�С
+//表桶的大小
 define('DB_BUCKET_SIZE',262144);
-//���ĳ��ȣ��ֽڣ�
+//键的长度（字节）
 define('DB_KEY_SIZE',128);
-//����������¼�ĳ���
+//单条索引记录的长度
 define('DB_INDEX_SIZE',DB_KEY_SIZE + 12);
-//���ظ�
+//键重复
 define('DB_KEY_EXISTS',1);
-//ִ��ʧ��
+//执行失败
 define('DB_FAILURE',-1);
-//ִ�гɹ�
+//执行成功
 define('DB_SUCCESS',0);
 
 class Terax{
-    //�����ļ����
+    //索引文件句柄
     private $idx_fp;
-    //�����ļ����
+    //数据文件句柄
     private $dat_fp;
-    //DB�ر����
+    //DB关闭情况
     private $closed;
 
     /**
-     * �����ݿ�
+     * 打开数据库
      *
-     * @param $pathname //���ݿ�����
+     * @param $pathname //数据库名字
      * @return int
      */
     public function open($pathname)
     {
-        //�����ļ�·��
+        //索引文件路径
         $idx_path = $pathname.'.idx';
-        //�����ļ�·��
+        //数据文件路径
         $dat_path = $pathname.'.dat';
-        //�������ļ��Ĵ�������ж��Ƿ�Ҫ��ʼ������ʲôģʽ�������ļ�
+        //由索引文件的存在与否判断是否要初始化和以什么模式打开索引文件
         if (!file_exists($idx_path)){
             $init = true;
             $mode = "w+b";
@@ -50,9 +50,9 @@ class Terax{
         if (!$this->idx_fp){
             return DB_FAILURE;
         }
-        //��Ҫ��ʼ�����������elemд�������ļ���
+        //需要初始化则把索引块elem写入索引文件中
         if ($init){
-            //�Ѵ���Ͱ��С����ֵ����ֵΪ0�ĳ��������֣�ռ4���ֽڣ�д���ļ��У�ռ1MB�ռ�
+            //把代表桶大小的数值个数值为0的长整型数字（占4个字节）写入文件中，占1MB空间
             $elem = pack('L',0x00000000);
             for($i=0; $i<DB_BUCKET_SIZE; $i++){
                 fwrite($this->idx_fp,$elem,4);
@@ -66,15 +66,15 @@ class Terax{
     }
 
     /**
-     * ���ݼ��ַ�������hashֵ
+     * 根据键字符串计算hash值
      *
-     * @param $string  //���ַ���
-     * @return int     //hashֵ
+     * @param $string  //键字符串
+     * @return int     //hash值
      */
     private function _hash($string)
     {
-        //��ͨ��MD5�������ַ���������һ��32���ַ����ַ�����ȡǰ8���ַ���Ϊ���㴮
-        //������Times33�㷨���䴦����һ�����������ء����㷨���ŵ����ڷֲ��ȽϾ��ȣ��ٶȷǳ���
+        //先通过MD5函数把字符串处理成一个32个字符的字符串，取前8个字符作为计算串
+        //再利用Times33算法将其处理成一个整数并返回。该算法的优点在于分布比较均匀，速度非常快
         $string = substr(md5($string),0,8);
         $hash = 0;
         for($i=0; $i<8; $i++){
@@ -210,9 +210,9 @@ class Terax{
 
     public function clear()
     {
-        var_dump($this->dat_fp);
-//        file_put_contents($this->dat_fp,'');
-//        echo 'ok';
+        //var_dump($this->dat_fp);
+        file_put_contents($this->dat_fp,'');
+        echo 'ok';
     }
 
     public function close()
